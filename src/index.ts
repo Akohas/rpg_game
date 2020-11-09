@@ -109,18 +109,31 @@ class Game {
 
 	}
 
+	/** Точка, в которую смотрит камера и вокруг которой вращается OrbitControls */
+	getCameraTarget = (): THREE.Vector3=> {
+		const targetPosition = this.player.object.position.clone();
+		targetPosition.setY(targetPosition.y + this.player.height / 4 * 3);
+		return targetPosition;
+	}
+
 	initCamera = (): void => {
-		const target = this.player.object.position.clone();
-		target.y = this.player.height / 2;
-		
-		this.camera.position.set(target.x, this.player.height + 50, target.z - 200);
+		const CAMERA_DISTANCE = 200;
+		const CAMERA_MAX_DISTANCE = 300;
+		const CAMERA_MIN_DISTANCE = 50;
+
+		const targetPosition = this.getCameraTarget();
+
+		const targetBackwardDirection = this.player.object.getWorldDirection(new THREE.Vector3()).multiplyScalar(-1);
+		const cameraPosition = targetPosition.clone().add(targetBackwardDirection.multiplyScalar(CAMERA_DISTANCE));
+
+		this.camera.position.add(cameraPosition);
 		this.scene.add(this.camera);
-		this.camera.lookAt(target);
 
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.enableKeys = false;
-		this.controls.target = target;
-		this.controls.maxDistance = 300;
+		this.controls.target.set(targetPosition.x, targetPosition.y, targetPosition.z);
+		this.controls.maxDistance = CAMERA_MAX_DISTANCE;
+		this.controls.minDistance = CAMERA_MIN_DISTANCE;
 	}
 
 	initLights = (): void => {
@@ -159,7 +172,8 @@ class Game {
 				}
 			});
 
-			object.position.setX(100);
+			object.position.setZ(600);
+			object.lookAt(0, 0, 0);
 			this.scene.add(this.player.object);
 
 			const promises = this.player.animations.map((animation) => this.loadAnimation(animation));
@@ -288,22 +302,22 @@ class Game {
 			this.player.object.position.add(offset);
 			this.camera.position.add(offset)
 
-			const target = this.player.object.position.clone();
-			target.y = this.player.height / 2;
-			this.controls.target = target
+			const target = this.getCameraTarget();
+			this.controls.target.set(target.x, target.y, target.z);
 		}
 	}
 
 	render = (): void => {
 		requestAnimationFrame(this.render);
 		const delta = this.clock.getDelta()
+		const rotationSpeed = 3;
 
 		if (this.player.rotation == PlayerRotation.LEFT) {
-			this.player.object.rotateY(0.1)
+			this.player.object.rotateY(rotationSpeed * delta)
 		}
 
 		if (this.player.rotation == PlayerRotation.RIGHT) {
-			this.player.object.rotateY(-0.1)
+			this.player.object.rotateY(-(rotationSpeed * delta))
 		}
 
 		if(this.player.state == PlayerStates.WALK_FORWARD || this.player.state == PlayerStates.WALK_BACKWARD) {
@@ -314,3 +328,10 @@ class Game {
 		this.renderer.render(this.scene, this.camera);  
 	}
 }
+
+
+/** for console debug */
+// @ts-ignore
+window.THREE = THREE;
+// @ts-ignore
+window.game = new Game();
