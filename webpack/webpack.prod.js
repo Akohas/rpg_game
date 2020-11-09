@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WebpackMd5Hash = require("webpack-md5-hash");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const { prod_Path, src_Path } = require("./path");
 const { selectedPreprocessor } = require("./loader");
@@ -46,6 +47,11 @@ module.exports = {
     ]
   },
   plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+          { from: 'static', to: path.resolve(__dirname, prod_Path, 'static'), }
+      ]
+  }),
     new CleanWebpackPlugin(path.resolve(__dirname, prod_Path), {
       root: process.cwd()
     }),
