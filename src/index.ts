@@ -8,6 +8,7 @@ import {OBJLoader2} from  'three/examples/jsm/loaders/OBJLoader2';
 import {MTLLoader} from  'three/examples/jsm/loaders/MTLLoader';
 import {MtlObjBridge} from 'three/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js';
 
+import {getStaticFile} from './helpers';
 import {Preloader} from './preloader';
 
 import {AnimationsModel, Animation, PlayerStates, Player, PlayerRotation} from './types';
@@ -79,10 +80,10 @@ class Game {
 	loadEnvironment = (): void => {
 		const castShadowMeshes = ['cude-item', 'chair', 'tube', 'monitor'];
 
-		this.MTLLoader.load('/static/models/sci-fi_room/scifi.mtl', (materials) => {
+		this.MTLLoader.load(getStaticFile('models/sci-fi_room/scifi.mtl'), (materials) => {
 			this.objectLoader.addMaterials(MtlObjBridge.addMaterialsFromMtlLoader(materials), true);
 
-			this.objectLoader.load('/static/models/sci-fi_room/scifi.obj', (object) => {
+			this.objectLoader.load(getStaticFile('models/sci-fi_room/scifi.obj'), (object) => {
 				// итерация по всем потомкам модели комнаты
 				object.traverse((child) => {
 					if (child instanceof THREE.Mesh) {
@@ -110,7 +111,12 @@ class Game {
 	}
 
 	/** Точка, в которую смотрит камера и вокруг которой вращается OrbitControls */
-	getCameraTarget = (): THREE.Vector3=> {
+	getCameraTarget = (): THREE.Vector3 => {
+
+		if (!this.player.object) {
+			return new THREE.Vector3();
+		}
+
 		const targetPosition = this.player.object.position.clone();
 		targetPosition.setY(targetPosition.y + this.player.height / 4 * 3);
 		return targetPosition;
@@ -149,7 +155,7 @@ class Game {
 	}
 
 	loadCharacter = (): void => {
-		this.fbxLoader.load('/static/models/character.fbx', (object) => {
+		this.fbxLoader.load(getStaticFile('models/character.fbx'), (object) => {
 			this.player.object = object;
 	
 			this.player.mixer = new THREE.AnimationMixer(this.player.object);
@@ -183,7 +189,7 @@ class Game {
 
 	loadAnimation = (animation: Animation): Promise<undefined> => {
 		return new Promise((resolve) => {
-			this.fbxLoader.load(`./static/models/animations/${animation}.fbx`, (object:  AnimationsModel) => {
+			this.fbxLoader.load(getStaticFile(`models/animations/${animation}.fbx`), (object:  AnimationsModel) => {
 				const action = this.player.mixer.clipAction(object.animations[0]);
 				this.player.actions[animation] = action;
 				this.scene.add(object);
