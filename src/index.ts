@@ -12,6 +12,7 @@ import {getStaticFile} from './helpers';
 import {Preloader} from './preloader';
 
 import {AnimationsModel, Animation, PlayerStates, Player, PlayerRotation} from './types';
+import { Vector3 } from 'three';
 
 if (!WEBGL.isWebGLAvailable()) {
 	document.body.appendChild(WEBGL.getWebGLErrorMessage());
@@ -155,7 +156,7 @@ class Game {
 	}
 
 	loadCharacter = (): void => {
-		this.fbxLoader.load(getStaticFile('models/character.fbx'), (object) => {
+		this.fbxLoader.load(getStaticFile('models/astra.fbx'), (object) => {
 			this.player.object = object;
 	
 			this.player.mixer = new THREE.AnimationMixer(this.player.object);
